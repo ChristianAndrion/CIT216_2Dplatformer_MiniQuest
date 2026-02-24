@@ -239,7 +239,7 @@ public class PlayerController : MonoBehaviour
 
         else if (collision.gameObject.CompareTag("console"))
         {
-
+            GameManager.instance.UnlockDoor();
         }
     }
 }

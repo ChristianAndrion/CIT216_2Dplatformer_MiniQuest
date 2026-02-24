@@ -12,6 +12,7 @@ TagManager:
   - win
   - door
   - console
+  - healthUI
   layers:
   - Default
   - TransparentFX
