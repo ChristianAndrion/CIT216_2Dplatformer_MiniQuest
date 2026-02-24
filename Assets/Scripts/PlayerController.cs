@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     
     public float moveSpeed = 5f;
     public float jumpForce = 8f;
+    public float lowJumpMultiplier = 2f;
     [Tooltip("Air Friction")]
     public float airMultiplier = 0.25f;
 
@@ -78,7 +79,7 @@ public class PlayerController : MonoBehaviour
             facingRight = true;
         }
 
-        anim.SetFloat("jump_velocity", rb.linearVelocityY);
+        
 
         //Event polling
         float isAttackHeld = pi.actions["Attack"].ReadValue<float>(); //1 means held, 0 means not held
@@ -102,7 +103,7 @@ public class PlayerController : MonoBehaviour
         float accelRate = isGrounded ? moveSpeed : moveSpeed * airMultiplier; //Short hand for if else statement [if statement] ? [Truth Value] : [False Value]
         float movement = speedDiff * accelRate;//How hard to push the player
 
-        CheckGrounded();
+        
 
         rb.AddForce(Vector2.right * movement);
         if(moveInput.x < 0 || moveInput.x > 0)
@@ -114,12 +115,28 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("is_idle", true);
         }
 
-        if (jumpPressed && isGrounded)
+
+        float isJumpHeld = pi.actions["Jump"].ReadValue<float>();
+
+        if (isJumpHeld > 0 && isGrounded)
         {
-            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-            jumpPressed = false;
-            isGrounded = false;
+            rb.linearVelocity = new Vector2(rb.linearVelocityX, jumpForce);
         }
+
+        if(rb.linearVelocityY > 0 && isJumpHeld <= 0)
+        {
+            rb.linearVelocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+        }
+
+        anim.SetFloat("jump_velocity", rb.linearVelocityY);
+
+        //In Class jump code
+        //if (jumpPressed && isGrounded)
+        //{
+        //    rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+        //    jumpPressed = false;
+        //    isGrounded = false;
+        //}
 
         if (rb.linearVelocity.y < 0) // Player is Falling
             rb.gravityScale = fallGravityScale;
@@ -136,6 +153,7 @@ public class PlayerController : MonoBehaviour
 
         Debug.DrawRay(rb.position, Vector2.down, Color.red, 1f);
 
+        CheckGrounded();
 
     }
 
@@ -179,7 +197,20 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("isDead", true);
             Invoke("KillPlayer", 1f); //Reload current scene
         }
-
+        if (collision.gameObject.CompareTag("pickup"))
+        {
+            health += 10;
+            
+        }
+        if (collision.gameObject.CompareTag("console"))
+        {
+            Debug.Log("Entered Console");
+            GameManager.instance.UnlockDoor();
+        }
+        if (collision.gameObject.CompareTag("win"))
+        {
+            GameManager.instance.GameWin();
+        }
     }
 
     void KillPlayer()

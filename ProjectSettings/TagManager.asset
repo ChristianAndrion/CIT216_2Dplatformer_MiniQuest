@@ -5,6 +5,13 @@ TagManager:
   serializedVersion: 3
   tags:
   - Ground
+  - bullet
+  - enemy
+  - boundary
+  - pickup
+  - win
+  - door
+  - console
   layers:
   - Default
   - TransparentFX
